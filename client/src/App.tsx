@@ -2,20 +2,25 @@ import { useState } from "react";
 import { PlannerProvider, usePlanner } from "./store";
 import { SemesterGrid } from "./components/SemesterGrid";
 import { AgendaView } from "./components/AgendaView";
+import { ExamList } from "./components/ExamList";
 import { ClassManager } from "./components/ClassManager";
+import { TaskEditor } from "./components/TaskEditor";
 import { CelebrationProvider } from "./components/Celebration";
+import { todayISO } from "./lib/dates";
 
-type View = "semester" | "week" | "today";
+type View = "semester" | "week" | "today" | "exams";
 
 function PlannerApp() {
-  const { loading, error } = usePlanner();
+  const { loading, error, classes } = usePlanner();
   const [view, setView] = useState<View>("today");
   const [managing, setManaging] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const tabs: { id: View; label: string }[] = [
     { id: "today", label: "Today" },
     { id: "week", label: "This Week" },
     { id: "semester", label: "Whole Semester" },
+    { id: "exams", label: "Tests & Midterms" },
   ];
 
   return (
@@ -38,8 +43,14 @@ function PlannerApp() {
           ))}
         </nav>
         <button
+          onClick={() => setAdding(true)}
+          className="ml-auto rounded-md bg-neutral-900 dark:bg-white px-3 py-1.5 text-sm font-medium text-white dark:text-neutral-900 hover:opacity-90"
+        >
+          + Add assignment
+        </button>
+        <button
           onClick={() => setManaging(true)}
-          className="ml-auto rounded-md px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          className="rounded-md px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
         >
           Manage classes
         </button>
@@ -53,11 +64,21 @@ function PlannerApp() {
             {view === "semester" && <SemesterGrid />}
             {view === "week" && <AgendaView mode="week" />}
             {view === "today" && <AgendaView mode="today" />}
+            {view === "exams" && <ExamList />}
           </div>
         )}
       </main>
 
       {managing && <ClassManager onClose={() => setManaging(false)} />}
+      {adding && (
+        <TaskEditor
+          date={todayISO()}
+          classItem={null}
+          classes={classes}
+          existing={null}
+          onClose={() => setAdding(false)}
+        />
+      )}
     </div>
   );
 }

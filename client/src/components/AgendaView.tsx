@@ -69,7 +69,7 @@ export function AgendaView({ mode }: { mode: "today" | "week" }) {
                 className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 ml-auto"
                 onClick={() => setEditing({ date: iso, classItem: null, task: null })}
               >
-                + Add task
+                + Add assignment
               </button>
             </div>
 
@@ -172,6 +172,11 @@ function TaskRow({
           <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
             {classItem?.name ?? "Unassigned"}
           </span>
+          {task.type === "exam" && (
+            <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:bg-red-950 dark:text-red-300">
+              Test
+            </span>
+          )}
         </div>
         <p
           className={`text-sm ${

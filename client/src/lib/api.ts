@@ -1,4 +1,4 @@
-import type { ClassItem, ExtractedItem, Settings, Task } from "../types";
+import type { ClassItem, ExtractedItem, Settings, Task, TaskType } from "../types";
 
 const BASE = "/api";
 
@@ -36,13 +36,21 @@ export const api = {
     date: string;
     title: string;
     description?: string;
+    type?: TaskType;
   }) => request<Task>("/tasks", { method: "POST", body: JSON.stringify(data) }),
   bulkCreateTasks: (
-    tasks: Array<{ class_id?: string | null; date: string; title: string; description?: string; source?: string }>
+    tasks: Array<{
+      class_id?: string | null;
+      date: string;
+      title: string;
+      description?: string;
+      source?: string;
+      type?: TaskType;
+    }>
   ) => request<Task[]>("/tasks/bulk", { method: "POST", body: JSON.stringify({ tasks }) }),
   updateTask: (
     id: string,
-    data: Partial<{ class_id: string | null; date: string; title: string; description: string; done: boolean }>
+    data: Partial<{ class_id: string | null; date: string; title: string; description: string; done: boolean; type: TaskType }>
   ) => request<Task>(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteTask: (id: string) => request<void>(`/tasks/${id}`, { method: "DELETE" }),
 
@@ -55,7 +63,7 @@ export const api = {
     form.append("file", file);
     form.append("referenceYear", String(referenceYear));
     if (referenceMonth) form.append("referenceMonth", String(referenceMonth));
-    return request<{ items: ExtractedItem[] }>("/syllabus/parse", {
+    return request<{ items: ExtractedItem[]; method: "ai" | "basic" }>("/syllabus/parse", {
       method: "POST",
       body: form,
     });

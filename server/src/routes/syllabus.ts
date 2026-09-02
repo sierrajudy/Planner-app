@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { extractText } from "../lib/textExtract.js";
 import { extractSyllabusItems } from "../lib/extract.js";
+import { aiExtractAvailable, aiExtractSyllabusItems } from "../lib/aiExtract.js";
 
 export const syllabusRouter = Router();
 
@@ -30,8 +31,23 @@ syllabusRouter.post("/parse", upload.single("file"), async (req, res) => {
       : new Date().getFullYear();
     const referenceMonth = req.body?.referenceMonth ? Number(req.body.referenceMonth) : undefined;
 
-    const items = extractSyllabusItems(text, { referenceYear, referenceMonth });
-    res.json({ items });
+    // Prefer the AI reader when an API key is configured; fall back to the
+    // rule-based parser if the key is missing or the API call fails.
+    let method: "ai" | "basic" = "basic";
+    let items;
+    if (aiExtractAvailable()) {
+      try {
+        items = await aiExtractSyllabusItems(text, { referenceYear, referenceMonth });
+        method = "ai";
+      } catch (err) {
+        console.error("AI syllabus parse failed, falling back to basic parser:", err);
+      }
+    }
+    if (!items) {
+      items = extractSyllabusItems(text, { referenceYear, referenceMonth });
+    }
+
+    res.json({ items, method });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to parse syllabus";
     res.status(500).json({ error: message });

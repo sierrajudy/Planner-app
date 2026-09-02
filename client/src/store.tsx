@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "./lib/api";
-import type { ClassItem, Settings, Task } from "./types";
+import type { ClassItem, Settings, Task, TaskType } from "./types";
 
 interface PlannerState {
   classes: ClassItem[];
@@ -13,13 +13,26 @@ interface PlannerState {
   renameClass: (id: string, name: string) => Promise<void>;
   recolorClass: (id: string, color: string) => Promise<void>;
   removeClass: (id: string) => Promise<void>;
-  addTask: (data: { class_id?: string | null; date: string; title: string; description?: string }) => Promise<void>;
+  addTask: (data: {
+    class_id?: string | null;
+    date: string;
+    title: string;
+    description?: string;
+    type?: TaskType;
+  }) => Promise<void>;
   bulkAddTasks: (
-    tasks: Array<{ class_id?: string | null; date: string; title: string; description?: string; source?: string }>
+    tasks: Array<{
+      class_id?: string | null;
+      date: string;
+      title: string;
+      description?: string;
+      source?: string;
+      type?: TaskType;
+    }>
   ) => Promise<void>;
   updateTask: (
     id: string,
-    data: Partial<{ class_id: string | null; date: string; title: string; description: string; done: boolean }>
+    data: Partial<{ class_id: string | null; date: string; title: string; description: string; done: boolean; type: TaskType }>
   ) => Promise<void>;
   toggleTaskDone: (id: string) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
@@ -76,27 +89,51 @@ export function PlannerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addTask = useCallback(
-    async (data: { class_id?: string | null; date: string; title: string; description?: string }) => {
-      const created = await api.createTask(data);
-      setTasks((prev) => [...prev, created]);
+    async (data: {
+      class_id?: string | null;
+      date: string;
+      title: string;
+      description?: string;
+      type?: TaskType;
+    }) => {
+      try {
+        const created = await api.createTask(data);
+        setTasks((prev) => [...prev, created]);
+      } catch (e) {
+        // Re-sync in case our classes/tasks drifted from the server.
+        reload();
+        throw e;
+      }
     },
-    []
+    [reload]
   );
 
   const bulkAddTasks = useCallback(
     async (
-      newTasks: Array<{ class_id?: string | null; date: string; title: string; description?: string; source?: string }>
+      newTasks: Array<{
+        class_id?: string | null;
+        date: string;
+        title: string;
+        description?: string;
+        source?: string;
+        type?: TaskType;
+      }>
     ) => {
-      const created = await api.bulkCreateTasks(newTasks);
-      setTasks((prev) => [...prev, ...created]);
+      try {
+        const created = await api.bulkCreateTasks(newTasks);
+        setTasks((prev) => [...prev, ...created]);
+      } catch (e) {
+        reload();
+        throw e;
+      }
     },
-    []
+    [reload]
   );
 
   const updateTask = useCallback(
     async (
       id: string,
-      data: Partial<{ class_id: string | null; date: string; title: string; description: string; done: boolean }>
+      data: Partial<{ class_id: string | null; date: string; title: string; description: string; done: boolean; type: TaskType }>
     ) => {
       const updated = await api.updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));

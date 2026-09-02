@@ -4,14 +4,15 @@
     {
       "name": "planner-server",
       "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH; cd \"/Users/sierrajudy/Planner App/server\" && npm run dev"],
-      "port": 3001
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH; cd \"/Users/sierrajudy/planner app (not buckets)/server\" && PORT=3011 npm run dev"],
+      "port": 3011
     },
     {
       "name": "planner-client",
       "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH; cd \"/Users/sierrajudy/Planner App/client\" && npm run dev"],
-      "port": 5173
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH; cd \"/Users/sierrajudy/planner app (not buckets)/client\" && API_PROXY_TARGET=http://localhost:3011 npm run dev -- --port $PORT --strictPort"],
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }

@@ -58,6 +58,7 @@ Two free accounts are required (both free, no credit card needed as of writing):
 3. Add environment variables:
    - `TURSO_DATABASE_URL` — from step 1
    - `TURSO_AUTH_TOKEN` — from step 1
+   - `ANTHROPIC_API_KEY` — optional, enables the AI syllabus reader (see `server/.env.example`)
 4. Deploy. Render gives you a public URL like `https://planner-xxxx.onrender.com` — that's
    your website, reachable from any device.
 
@@ -68,9 +69,16 @@ Free-tier note: Render's free web services spin down after periods of inactivity
 ~30-60 seconds to wake back up on the next visit. Your data is safe either way since it
 lives in Turso, not on Render's disk.
 
-## Note on syllabus upload accuracy
+## Syllabus upload — two parsers
 
-The syllabus parser is rule-based (regex date matching), not AI — it looks for lines like
-"Jan. 21 ..." or "1/21 ..." and groups nearby text as the task. It works well on syllabi with
-clear per-line dates, but can miss items or misparse unusual formatting. Always review the
-extracted list (editable, with checkboxes) before adding it to your planner.
+**With an `ANTHROPIC_API_KEY` set** (see `server/.env.example`), uploaded syllabi are read by
+Claude: it resolves real dates (even from "Week 3" / date ranges), writes short titles, and
+tags each item as an assignment or a test/midterm. Costs roughly 1–5¢ per syllabus depending
+on `SYLLABUS_MODEL` (default `claude-sonnet-5`).
+
+**Without a key**, it falls back automatically to a rule-based parser (regex date matching) —
+it looks for lines like "Jan. 21 ..." or "1/21 ..." and groups nearby text. Works on syllabi
+with clear per-line dates, rougher on anything unusual.
+
+Either way, the extracted list is editable (with checkboxes and an assignment/test toggle) —
+review it before adding to your planner. The review screen tells you which parser ran.

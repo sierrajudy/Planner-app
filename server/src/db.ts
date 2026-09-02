@@ -49,6 +49,13 @@ export async function initDb(): Promise<void> {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date)`);
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_tasks_class ON tasks(class_id)`);
 
+  // Migration: add `type` column for distinguishing exams (tests/midterms/finals)
+  // from regular assignments. Older databases won't have it.
+  const cols = await db.execute(`PRAGMA table_info(tasks)`);
+  if (!cols.rows.some((r) => r.name === "type")) {
+    await db.execute(`ALTER TABLE tasks ADD COLUMN type TEXT NOT NULL DEFAULT 'assignment'`);
+  }
+
   await db.execute(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,

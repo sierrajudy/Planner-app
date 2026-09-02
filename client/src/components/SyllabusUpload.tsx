@@ -17,6 +17,7 @@ export function SyllabusUpload({ classItem, onClose }: { classItem: ClassItem; o
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<ReviewItem[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [method, setMethod] = useState<"ai" | "basic" | null>(null);
 
   const semesterStart = settings ? new Date(settings.semester_start) : new Date();
   const referenceYear = semesterStart.getFullYear();
@@ -31,6 +32,7 @@ export function SyllabusUpload({ classItem, onClose }: { classItem: ClassItem; o
       if (result.items.length === 0) {
         setError("Couldn't find any dated items in that file. You can still add tasks manually.");
       }
+      setMethod(result.method);
       setItems(result.items.map((i) => ({ ...i, include: true })));
       setStage("review");
     } catch (e) {
@@ -56,6 +58,7 @@ export function SyllabusUpload({ classItem, onClose }: { classItem: ClassItem; o
           title: i.title.trim(),
           description: i.description,
           source: "syllabus",
+          type: i.type ?? "assignment",
         }))
       );
       onClose();
@@ -99,6 +102,15 @@ export function SyllabusUpload({ classItem, onClose }: { classItem: ClassItem; o
             Found {items.length} item{items.length === 1 ? "" : "s"}. Uncheck anything you don't want, or edit
             before adding.
           </p>
+          {method === "ai" ? (
+            <p className="text-xs text-green-600 dark:text-green-400">
+              ✨ Read by AI — dates and assignment/test tags should be accurate, but still give them a look.
+            </p>
+          ) : (
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Basic pattern-matching (no AI key set) — double-check the dates especially.
+            </p>
+          )}
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="max-h-[50vh] overflow-y-auto flex flex-col gap-2">
             {items.map((item, idx) => (
@@ -124,6 +136,14 @@ export function SyllabusUpload({ classItem, onClose }: { classItem: ClassItem; o
                   onChange={(e) => updateItem(idx, { title: e.target.value })}
                   className="flex-1 rounded border border-neutral-300 dark:border-neutral-600 bg-transparent px-2 py-1 text-sm"
                 />
+                <select
+                  value={item.type ?? "assignment"}
+                  onChange={(e) => updateItem(idx, { type: e.target.value as ReviewItem["type"] })}
+                  className="rounded border border-neutral-300 dark:border-neutral-600 bg-transparent px-1 py-1 text-xs"
+                >
+                  <option value="assignment">Assignment</option>
+                  <option value="exam">Test</option>
+                </select>
               </div>
             ))}
             {items.length === 0 && (

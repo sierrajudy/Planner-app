@@ -2,6 +2,13 @@ export interface ExtractedTask {
   date: string; // YYYY-MM-DD
   title: string;
   description?: string;
+  type: "assignment" | "exam";
+}
+
+const EXAM_KEYWORDS = /\b(exam|midterm|mid-term|final|finals|test|quiz|assessment)\b/i;
+
+function classify(text: string): "assignment" | "exam" {
+  return EXAM_KEYWORDS.test(text) ? "exam" : "assignment";
 }
 
 const MONTH_INDEX: Record<string, number> = {
@@ -87,6 +94,7 @@ export function extractSyllabusItems(
           date: toISO(pending.year, pending.month, pending.day),
           title: text.length > 120 ? `${text.slice(0, 117)}...` : text,
           description: text.length > 120 ? text : undefined,
+          type: classify(text),
         });
       }
     }
@@ -121,6 +129,7 @@ export function extractSyllabusItems(
           date: toISO(year, match.month, match.day),
           title: remainder.length > 120 ? `${remainder.slice(0, 117)}...` : remainder,
           description: remainder.length > 120 ? remainder : undefined,
+          type: classify(remainder),
         });
       } else {
         pending = { year, month: match.month, day: match.day, lines: [] };

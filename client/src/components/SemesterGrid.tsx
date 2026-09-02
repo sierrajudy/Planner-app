@@ -120,6 +120,11 @@ export function SemesterGrid() {
                                   : "text-neutral-800 dark:text-neutral-200"
                               }`}
                             >
+                              {t.type === "exam" && (
+                                <span className="mr-1 rounded bg-red-100 px-1 text-[9px] font-semibold uppercase text-red-700 dark:bg-red-950 dark:text-red-300">
+                                  Test
+                                </span>
+                              )}
                               {t.title}
                             </span>
                           </div>

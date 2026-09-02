@@ -35,6 +35,15 @@ async function main() {
     });
   }
 
+  // JSON error responses for anything a route throws, so the client always gets
+  // { error } it can display instead of an HTML stack-trace page.
+  app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error(`${req.method} ${req.originalUrl} failed:`, err);
+    if (res.headersSent) return;
+    const message = err instanceof Error ? err.message : "Something went wrong";
+    res.status(500).json({ error: message });
+  });
+
   app.listen(PORT, () => {
     console.log(`Planner server listening on http://localhost:${PORT}`);
   });
