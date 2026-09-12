@@ -1,4 +1,4 @@
-import type { ClassItem, ExtractedItem, Settings, Task, TaskType } from "../types";
+import type { ClassItem, ExtractedItem, SchedulePlan, Settings, Task, TaskType } from "../types";
 
 const BASE = "/api";
 
@@ -57,6 +57,9 @@ export const api = {
   getSettings: () => request<Settings>("/settings"),
   updateSettings: (data: Partial<Settings>) =>
     request<Settings>("/settings", { method: "PATCH", body: JSON.stringify(data) }),
+
+  recommendSchedule: () =>
+    request<SchedulePlan>("/schedule/recommend", { method: "POST", body: JSON.stringify({}) }),
 
   parseSyllabus: async (file: File, referenceYear: number, referenceMonth?: number) => {
     const form = new FormData();

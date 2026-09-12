@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PlannerProvider, usePlanner } from "./store";
 import { Dashboard } from "./components/Dashboard";
 import { CalendarMonth } from "./components/CalendarMonth";
+import { StudyPlan } from "./components/StudyPlan";
 import { SemesterGrid } from "./components/SemesterGrid";
 import { AgendaView } from "./components/AgendaView";
 import { ExamList } from "./components/ExamList";
@@ -10,7 +11,7 @@ import { TaskEditor } from "./components/TaskEditor";
 import { CelebrationProvider } from "./components/Celebration";
 import { todayISO } from "./lib/dates";
 
-type View = "dashboard" | "semester" | "week" | "today" | "calendar" | "exams";
+type View = "dashboard" | "semester" | "week" | "today" | "calendar" | "exams" | "plan";
 
 function PlannerApp() {
   const { loading, error, classes } = usePlanner();
@@ -20,6 +21,7 @@ function PlannerApp() {
 
   const tabs: { id: View; label: string }[] = [
     { id: "dashboard", label: "Dashboard" },
+    { id: "plan", label: "Study Plan" },
     { id: "today", label: "Today" },
     { id: "week", label: "This Week" },
     { id: "calendar", label: "Calendar" },
@@ -68,6 +70,7 @@ function PlannerApp() {
         {!loading && !error && (
           <div className="flex-1 overflow-auto">
             {view === "dashboard" && <Dashboard />}
+            {view === "plan" && <StudyPlan />}
             {view === "semester" && <SemesterGrid />}
             {view === "week" && <AgendaView mode="week" />}
             {view === "today" && <AgendaView mode="today" />}

@@ -32,3 +32,13 @@ export interface ExtractedItem {
   description?: string;
   type?: TaskType;
 }
+
+export interface ScheduleDay {
+  date: string;
+  items: Array<{ task_id: string; note: string }>;
+}
+
+export interface SchedulePlan {
+  overall_advice: string;
+  days: ScheduleDay[];
+}
