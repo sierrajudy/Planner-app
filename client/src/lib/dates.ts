@@ -1,10 +1,14 @@
 import {
   addDays,
+  addMonths,
   eachDayOfInterval,
+  endOfMonth,
   endOfWeek,
   format,
+  isSameMonth,
   isValid,
   parseISO,
+  startOfMonth,
   startOfWeek,
 } from "date-fns";
 
@@ -43,4 +47,25 @@ export function formatShort(date: Date): string {
   return format(date, "EEE M/d");
 }
 
-export { addDays, format };
+export function formatMonthYear(date: Date): string {
+  return format(date, "MMMM yyyy");
+}
+
+/** Full weeks (Sun–Sat) covering the month `anchor` falls in, including the
+ * leading/trailing days from adjacent months needed to complete each row. */
+export function monthGridDays(anchor: Date): Date[] {
+  const start = startOfWeek(startOfMonth(anchor), { weekStartsOn: 0 });
+  const end = endOfWeek(endOfMonth(anchor), { weekStartsOn: 0 });
+  return eachDayOfInterval({ start, end });
+}
+
+/** "Today" / "Tomorrow" / short date, for compact due-date labels. */
+export function relativeDateLabel(iso: string): string {
+  const today = todayISO();
+  const tomorrow = toISO(addDays(new Date(), 1));
+  if (iso === today) return "Today";
+  if (iso === tomorrow) return "Tomorrow";
+  return formatShort(fromISO(iso));
+}
+
+export { addDays, addMonths, format, isSameMonth };
