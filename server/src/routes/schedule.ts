@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { recommendSchedule, scheduleAiAvailable, type ScheduleTaskInput } from "../lib/scheduleRecommend.js";
+import { recommendSchedule, scheduleAiAvailable, type BusyEventInput, type ScheduleTaskInput } from "../lib/scheduleRecommend.js";
+import { fetchUpcomingEvents, googleStatus } from "../lib/googleCalendar.js";
+
+const CALENDAR_HORIZON_DAYS = 21;
 
 export const scheduleRouter = Router();
 
@@ -37,7 +40,19 @@ scheduleRouter.post("/recommend", async (req, res) => {
       date: row.date as string,
     }));
 
-    const plan = await recommendSchedule(tasks, today);
+    let busyEvents: BusyEventInput[] = [];
+    const gStatus = await googleStatus();
+    if (gStatus.connected) {
+      const events = await fetchUpcomingEvents(CALENDAR_HORIZON_DAYS);
+      busyEvents = events.map((e) => ({
+        date: e.date,
+        startTime: e.startTime,
+        endTime: e.endTime,
+        summary: e.summary,
+      }));
+    }
+
+    const plan = await recommendSchedule(tasks, today, busyEvents);
     res.json(plan);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to generate a study plan";

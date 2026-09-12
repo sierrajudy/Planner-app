@@ -27,6 +27,13 @@ export interface ScheduleRecommendation {
   days: ScheduleDay[];
 }
 
+export interface BusyEventInput {
+  date: string; // YYYY-MM-DD
+  startTime: string | null; // HH:MM, null if all-day
+  endTime: string | null;
+  summary: string;
+}
+
 const SYSTEM = `You are a study-planning assistant for a college student using a
 homework planner app. You are given their full list of outstanding assignments
 and tests, each with an id, title, class, type, and due date. Today's date is
@@ -56,7 +63,11 @@ Rules:
   first and why, in plain language a student would actually read.
 - Only include days that have at least one item. Order days chronologically.
 - If the task list is empty, return an empty "days" array and advice
-  congratulating them on being caught up.`;
+  congratulating them on being caught up.
+- You may also be given the student's existing Google Calendar commitments.
+  Use them to avoid piling study sessions onto days that are already packed,
+  preferring lighter or free days when the due date allows it — but don't let
+  a busy day stop you from scheduling something that's genuinely due soon.`;
 
 const INPUT_SCHEMA: Anthropic.Tool.InputSchema = {
   type: "object",
@@ -94,7 +105,8 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function recommendSchedule(
   tasks: ScheduleTaskInput[],
-  today: string
+  today: string,
+  busyEvents: BusyEventInput[] = []
 ): Promise<ScheduleRecommendation> {
   if (tasks.length === 0) {
     return { overall_advice: "Nothing outstanding — you're all caught up. Enjoy the break! 🎉", days: [] };
@@ -114,6 +126,15 @@ export async function recommendSchedule(
     )
     .join("\n");
 
+  const busySection =
+    busyEvents.length > 0
+      ? `\n\nExisting Google Calendar commitments over the same period:\n${busyEvents
+          .slice()
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .map((e) => `- ${e.date}${e.startTime ? ` ${e.startTime}-${e.endTime}` : " (all day)"}: ${e.summary}`)
+          .join("\n")}`
+      : "";
+
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 8000,
@@ -121,7 +142,7 @@ export async function recommendSchedule(
     messages: [
       {
         role: "user",
-        content: `Today is ${today}. Here is the full outstanding task list:\n\n${taskLines}`,
+        content: `Today is ${today}. Here is the full outstanding task list:\n\n${taskLines}${busySection}`,
       },
     ],
     tools: [

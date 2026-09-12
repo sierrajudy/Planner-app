@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { formatLong, fromISO, relativeDateLabel, todayISO } from "../lib/dates";
 import { hexWithAlpha } from "./ColorDot";
 import { TaskEditor } from "./TaskEditor";
+import { GoogleCalendarConnect } from "./GoogleCalendarConnect";
 import { useCelebration } from "./Celebration";
 import type { ClassItem, SchedulePlan, Task } from "../types";
 
@@ -85,6 +86,8 @@ export function StudyPlan() {
           the last minute.
         </p>
       </div>
+
+      <GoogleCalendarConnect />
 
       <div className="flex items-center gap-3">
         <button

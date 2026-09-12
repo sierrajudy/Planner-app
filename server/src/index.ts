@@ -10,6 +10,7 @@ import { tasksRouter } from "./routes/tasks.js";
 import { syllabusRouter } from "./routes/syllabus.js";
 import { settingsRouter } from "./routes/settings.js";
 import { scheduleRouter } from "./routes/schedule.js";
+import { googleRouter } from "./routes/google.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,6 +29,7 @@ async function main() {
   app.use("/api/syllabus", syllabusRouter);
   app.use("/api/settings", settingsRouter);
   app.use("/api/schedule", scheduleRouter);
+  app.use("/api/google", googleRouter);
 
   const clientDist = path.join(__dirname, "..", "..", "client", "dist");
   if (fs.existsSync(clientDist)) {

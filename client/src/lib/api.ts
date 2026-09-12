@@ -61,6 +61,11 @@ export const api = {
   recommendSchedule: () =>
     request<SchedulePlan>("/schedule/recommend", { method: "POST", body: JSON.stringify({}) }),
 
+  getGoogleStatus: () =>
+    request<{ connected: boolean; configured: boolean; email: string | null }>("/google/status"),
+  getGoogleAuthUrl: () => request<{ url: string }>("/google/auth-url"),
+  disconnectGoogle: () => request<void>("/google/disconnect", { method: "POST" }),
+
   parseSyllabus: async (file: File, referenceYear: number, referenceMonth?: number) => {
     const form = new FormData();
     form.append("file", file);
